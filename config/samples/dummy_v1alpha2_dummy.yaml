@@ -3,10 +3,10 @@ kind: Dummy
 metadata:
   labels:
     app.kubernetes.io/name: dummy
-    app.kubernetes.io/instance: dummy-sample
+    app.kubernetes.io/instance: dummy-sample2
     app.kubernetes.io/part-of: prj
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: prj
-  name: dummy-sample
+  name: dummy-sample2
 spec:
-  message: "I'm just a dummy"
+  message: "I'm just a dummy 2"
