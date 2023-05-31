@@ -9,8 +9,13 @@ You’ll need a Kubernetes cluster to run against. You can use [Minikube](https:
 You can find the image in this repo: https://hub.docker.com/repositories/tokhiarh
 
 ### Running on the cluster
-1. Install Instances of Custom Resources:
+  Install the CRDs into the cluster:
 
+```sh
+make install
+```
+
+or trigger it manually:
 
 ```sh
  kubectl apply -f config/crd/bases/dummy.interview.com_dummies.yaml
@@ -18,7 +23,7 @@ You can find the image in this repo: https://hub.docker.com/repositories/tokhiar
 
 #### Creating the dummy Objects
 
-First run the controller:
+Run the controller:
 
 ```sh
 make run
@@ -57,6 +62,18 @@ kubectl delete dummy dummy-sample
 ```
 Now the controller will aslo delete the related pod.
 
+
+ #### Deployment
+ Deploy the controller to the cluster with the image specified by `IMG`:
+
+```sh
+make deploy IMG=tokhiarh/dummy-controller:v0.1.1
+```
+Apply the dummy sample:
+
+```sh
+kubectl apply -f config/samples/dummy_v1alpha1_dummy.yaml
+```
 
 ### Modifying the API definitions
 If you are editing the API definitions, generate the manifests such as CRs or CRDs using:
