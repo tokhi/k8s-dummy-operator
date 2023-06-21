@@ -71,12 +71,15 @@ func (r *DummyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	log.Info("Message:", "message", instance.Spec.Message)
 
-	instance.Status.SpecEcho = instance.Spec.Message
-
 	// status update
-	err = r.Status().Update(ctx, instance)
-	if err != nil {
-		return reconcile.Result{}, err
+	if instance.Status.SpecEcho != instance.Spec.Message {
+		instance.Status.SpecEcho = instance.Spec.Message
+		// status update
+		err = r.Status().Update(ctx, instance)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+
 	}
 
 	log.Info("SpecEcho:", "specEcho", instance.Status.SpecEcho)
@@ -92,30 +95,24 @@ func (r *DummyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return reconcile.Result{}, err
 		}
 
-		instance.Status.PodStatus = "Pending"
-		err = r.Status().Update(ctx, instance)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-		log.Info("PodStatus:", "podStatus", instance.Status.PodStatus)
-
 		// create the pod
 		err = r.Create(context.TODO(), pod)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
 
-		instance.Status.PodStatus = "Running"
-		err = r.Status().Update(ctx, instance)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-		log.Info("PodStatus:", "podStatus", instance.Status.PodStatus)
-
 	} else if err != nil {
 		return reconcile.Result{}, err
 	} else {
-		log.Info("Pod is already running")
+		if instance.Status.PodStatus != string(pod.Status.Phase) {
+			instance.Status.PodStatus = string(pod.Status.Phase)
+			err = r.Status().Update(ctx, instance)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+			log.Info("PodStatus:", "podStatus", instance.Status.PodStatus)
+
+		}
 	}
 
 	return ctrl.Result{}, nil
@@ -148,6 +145,7 @@ func newDumyPodWithNginx(dummy *dummyv1alpha1.Dummy) *corev1.Pod {
 func (r *DummyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
+		Owns(&corev1.Pod{}).
 		For(&dummyv1alpha1.Dummy{}).
 		Complete(r)
 }
